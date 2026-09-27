@@ -1,0 +1,20 @@
+# Datos crudos y procesados
+raw_data/*.fastq
+raw_data/*.fastq.gz
+trimmed_data/*.fastq
+trimmed_data/*.fastq.gz
+reference/*.fasta
+reference/*.fa
+reference/*.fa.gz
+
+# Alineamientos (pesados, regenerables)
+alignments/*.sam
+alignments/*.bam
+alignments/*.bai
+
+# Archivos temporales de SRA toolkit
+raw_data/*.sra
+raw_data/fasterq.tmp*
+
+# Sistema
+.DS_Store
