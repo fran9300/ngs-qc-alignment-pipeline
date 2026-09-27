@@ -46,13 +46,25 @@ SRA accession: `SRR2584863` (E. coli REL606, paired-end). Downloaded into `raw_d
 - `qc_reports/` — FastQC and MultiQC reports
 - `scripts/` — pipeline scripts
 
+## Usage
+
+### 1. Initial quality control
+
+\`\`\`bash
+fastqc raw_data/SRR2584863_1.fastq raw_data/SRR2584863_2.fastq -o qc_reports/
+\`\`\`
+
+Reports available in `qc_reports/`. Key findings: overall good quality data, 
+with expected quality drop and Nextera adapter content toward the read tail (more pronounced in R2, consistent with typical
+Illumina paired-end behavior). See `NOTES.md` for full interpretation.
+
 ## Progress log
 
 - [x] Installed Miniconda on WSL
 - [x] Configured bioconda/conda-forge channels, channel_priority strict
 - [x] Created `ngs-pipeline` environment with fastqc, fastp, bowtie2, samtools, multiqc
 - [x] Downloaded test dataset
-- [ ] Initial QC (FastQC)
+- [X] Initial QC (FastQC)
 - [ ] Trimming (fastp)
 - [ ] Post-trimming QC
 - [ ] Reference genome download

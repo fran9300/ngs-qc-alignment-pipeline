@@ -34,3 +34,38 @@ Toda secuencia se reporta 5'→3' por convención, siempre. R1 y R2 no son "una 
 - Accession: **SRR2584863** (E. coli, cepa REL606, del estudio de evolución experimental de 50.000 generaciones — Lenski lab).
 - Mismo accession usado en la lección oficial de Data Carpentry "Wrangling Genomics".
 - Descargado con: `fasterq-dump SRR2584863 --split-files --progress`
+
+
+## FastQC — control de calidad inicial
+
+Corrido con:
+\`\`\`bash
+fastqc raw_data/SRR2584863_1.fastq raw_data/SRR2584863_2.fastq -o qc_reports/
+\`\`\`
+
+### Cómo leer un FASTQ a mano
+Cada read son 4 líneas: header (`@...`), secuencia, separador (`+...`), calidad.
+La línea de calidad tiene el mismo largo que la secuencia — cada carácter corresponde a la base en esa misma posición.
+Fórmula: `Phred score = código ASCII del carácter - 33`. Ej: `F` (ASCII 70) → Phred 37 (buena calidad). `#` (ASCII 35) → Phred 2 (calidad pésima).
+
+### Resultados R1 (SRR2584863_1)
+- 1,553,259 reads, 150bp cada uno, ~233 Mbp totales.
+- Con genoma de E. coli (~4.6 Mbp), esto da ~50x de cobertura teórica solo con R1.
+- %GC = 50, coincide con lo esperado para E. coli real (buena señal, no hay indicio de contaminación).
+- **Per base sequence quality**: buena calidad en el cuerpo del read, cae progresivamente desde ~posición 100-130 en adelante. Esperado en Illumina (degradación química del reactivo a medida que avanza el ciclo de secuenciación).
+- **Per sequence quality scores**: la gran mayoría de los reads tiene calidad promedio muy alta (pico en Phred ~36-37), a pesar de la caída en la cola — el promedio del read completo no se ve muy afectado.
+- **Adapter Content** (⚠️): aparece adaptador Nextera Transposase hacia el final del read (~10% en la posición 150). Coincide con la caída de calidad en la misma zona — son fragmentos más cortos que 150bp, así que el secuenciador termina leyendo hacia el adaptador.
+- **Per base sequence content** (⚠️) y **Per sequence GC content** (⚠️): ambos son warnings esperados/benignos.
+  - El primero se dispara por el sesgo de "priming aleatorio" en las primeras ~15 bases del read, artefacto técnico bien conocido de Illumina, no un problema real (se estabiliza limpiamente después).
+  - El segundo es solo una campana de GC levemente más angosta que la teórica, sin picos secundarios — no indica contaminación.
+
+### Resultados R2 (SRR2584863_2) — comparación con R1
+R2 tiene más métricas en rojo (❌) que R1:
+- Per base sequence quality: ❌ (vs ✅ en R1)
+- Per tile sequence quality: ❌ (vs ✅ en R1)
+- Per base sequence content: ❌ (vs ⚠️ en R1)
+
+**Por qué R2 es sistemáticamente peor que R1**: es un patrón conocido y esperado en Illumina paired-end. R2 se secuencia después que R1 en la misma corrida, así que los reactivos químicos ya están más degradados para cuando le toca el turno — esto pasa en prácticamente cualquier dataset paired-end de Illumina, no es específico de este dataset.
+
+### Conclusión del QC inicial
+Dataset sano en general. Problema real y esperado: calidad decayendo + algo de adaptador Nextera en la cola de los reads (más marcado en R2). Los demás warnings son artefactos técnicos comunes, no problemas genuinos. Esto justifica el siguiente paso: trimming con fastp.
