@@ -97,3 +97,23 @@ Corrido FastQC de nuevo sobre `trimmed_data/`. Comparación directa con el repor
 
 ### Conclusión
 El trimming resolvió el problema identificado en el QC inicial (adaptador + calidad decayendo en la cola) sin introducir problemas reales nuevos. Datos listos para alineamiento.
+
+## Bowtie2 — alignment
+
+Corrido con:
+\`\`\`bash
+bowtie2 -x reference/REL606_index \
+  -1 trimmed_data/SRR2584863_1.trimmed.fastq \
+  -2 trimmed_data/SRR2584863_2.trimmed.fastq \
+  -S alignments/SRR2584863.sam \
+  --threads 4 \
+  2> alignments/bowtie2_summary.txt
+\`\`\`
+
+### Resultado: 99.46% overall alignment rate
+
+Buen resultado, pero con un detalle que vale la pena entender: solo 38.7% de los pares alinearon "concordantly" (dentro del rango de distancia esperado por Bowtie2), mientras que la gran mayoría del resto alineó "discordantly".
+
+**Por qué pasa esto**: no es un problema de calidad de los datos. Se debe a que el fragmento real de ADN de esta librería es más corto (~100bp, según el insert size peak reportado por fastp) que el largo combinado de R1+R2 (150bp cada uno). Esto hace que ambos mates se solapen fuertemente entre sí, y esa distancia "R1-inicio a R2-fin" cae fuera del rango que Bowtie2 considera "concordante" por default (aunque cada mate individualmente sí alinee correctamente y de forma única). Es un patrón documentado y conocido en la comunidad bioinformática para librerías con fragment size corto relativo al read length — no indica error de secuenciación, contaminación, ni problema del pipeline.
+
+Referencia: mismo patrón discutido en foros de bioinformática (Biostars) para casos análogos con librerías de fragmento corto.

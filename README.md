@@ -80,6 +80,34 @@ fastqc trimmed_data/SRR2584863_1.trimmed.fastq trimmed_data/SRR2584863_2.trimmed
 
 Confirms adapter content warning is resolved and the quality tail no longer drops into the red zone.
 
+### 4. Reference genome
+
+Downloaded the E. coli B REL606 reference genome (same strain as the sequenced sample) using NCBI datasets:
+
+\`\`\`bash
+conda install -n ngs-pipeline -c conda-forge ncbi-datasets-cli -y
+datasets download genome accession GCA_000017985.1 --include genome
+\`\`\`
+
+The FASTA (`REL606.fasta`, accession CP000819, ~4.6 Mbp) is not tracked in git; re-download using the command above to reproduce.
+
+### 5. Alignment
+
+Index the reference, then align trimmed reads:
+
+\`\`\`bash
+bowtie2-build reference/REL606.fasta reference/REL606_index
+
+bowtie2 -x reference/REL606_index \
+  -1 trimmed_data/SRR2584863_1.trimmed.fastq \
+  -2 trimmed_data/SRR2584863_2.trimmed.fastq \
+  -S alignments/SRR2584863.sam \
+  --threads 4 \
+  2> alignments/bowtie2_summary.txt
+\`\`\`
+
+**Result: 99.46% overall alignment rate.** Only ~38.7% of pairs aligned "concordantly" — this is expected, not a data quality issue: the actual library fragment size (~100bp, per fastp's insert size estimate) is shorter than the combined R1+R2 read length (150bp each), causing heavy mate overlap that falls outside Bowtie2's default concordant distance range. See `NOTES.md` for the full explanation.
+
 ## Progress log
 
 - [x] Installed Miniconda on WSL
@@ -89,8 +117,8 @@ Confirms adapter content warning is resolved and the quality tail no longer drop
 - [X] Initial QC (FastQC)
 - [X] Trimming (fastp)
 - [X] Post-trimming QC
-- [ ] Reference genome download
-- [ ] Alignment (Bowtie2)
+- [X] Reference genome download
+- [X] Alignment (Bowtie2)
 - [ ] SAM → BAM conversion, sort and index (SAMtools)
 - [ ] Mapping statistics (samtools flagstat)
 - [ ] Final report (MultiQC)

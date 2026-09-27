@@ -6,6 +6,7 @@ trimmed_data/*.fastq.gz
 reference/*.fasta
 reference/*.fa
 reference/*.fa.gz
+reference/*.bt2
 
 # Alineamientos (pesados, regenerables)
 alignments/*.sam
