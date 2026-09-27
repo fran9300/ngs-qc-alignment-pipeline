@@ -69,3 +69,31 @@ R2 tiene más métricas en rojo (❌) que R1:
 
 ### Conclusión del QC inicial
 Dataset sano en general. Problema real y esperado: calidad decayendo + algo de adaptador Nextera en la cola de los reads (más marcado en R2). Los demás warnings son artefactos técnicos comunes, no problemas genuinos. Esto justifica el siguiente paso: trimming con fastp.
+
+## fastp — trimming
+
+Corrido con:
+\`\`\`bash
+fastp \
+  -i raw_data/SRR2584863_1.fastq \
+  -I raw_data/SRR2584863_2.fastq \
+  -o trimmed_data/SRR2584863_1.trimmed.fastq \
+  -O trimmed_data/SRR2584863_2.trimmed.fastq \
+  --html qc_reports/fastp_report.html \
+  --json qc_reports/fastp_report.json
+\`\`\`
+
+### Resultados
+- Q30 subió de 89.4%→93.6% (R1) y 73.9%→84.7% (R2) — mejora mucho más marcada en R2, consistente con que R2 partía de peor calidad.
+- 502,702 reads descartados por baja calidad (~16% del total). Con ~50x de cobertura original, sigue sobrando cobertura para alinear.
+- 319,910 reads tenían adaptador Nextera; se recortaron ~18.7 Mbp de contaminación de adaptador.
+- **Insert size peak: 100bp** — el fragmento real de ADN es más corto que los 150bp que lee el secuenciador. Esto explica cuantitativamente por qué había adaptador en la cola de los reads: el secuenciador "se pasa" del fragmento real y termina leyendo hacia el adaptador.
+
+### Verificación con FastQC post-trimming
+Corrido FastQC de nuevo sobre `trimmed_data/`. Comparación directa con el reporte pre-trimming:
+- **Adapter Content: ⚠️ → ✅** (el problema identificado se resolvió)
+- **Per base sequence quality**: la cola ya no cae a zona roja (Phred 2-10); el peor caso ahora se mantiene sobre Phred ~28-30
+- **Sequence Length Distribution: ✅ → ⚠️** — esperado: antes todos los reads medían 150bp exacto, ahora hay largos variables porque cada read se recortó según lo que necesitaba. No es un problema real, es el resultado esperado del trimming.
+
+### Conclusión
+El trimming resolvió el problema identificado en el QC inicial (adaptador + calidad decayendo en la cola) sin introducir problemas reales nuevos. Datos listos para alineamiento.

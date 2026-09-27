@@ -58,6 +58,28 @@ Reports available in `qc_reports/`. Key findings: overall good quality data,
 with expected quality drop and Nextera adapter content toward the read tail (more pronounced in R2, consistent with typical
 Illumina paired-end behavior). See `NOTES.md` for full interpretation.
 
+### 2. Trimming and adapter removal
+
+\`\`\`bash
+fastp \
+  -i raw_data/SRR2584863_1.fastq \
+  -I raw_data/SRR2584863_2.fastq \
+  -o trimmed_data/SRR2584863_1.trimmed.fastq \
+  -O trimmed_data/SRR2584863_2.trimmed.fastq \
+  --html qc_reports/fastp_report.html \
+  --json qc_reports/fastp_report.json
+\`\`\`
+
+fastp automatically detects and trims adapters (Nextera Transposase Sequence was found near read tails) and low-quality tails. Q30 improved from 89.4%→93.6% (R1) and 73.9%→84.7% (R2). ~16% of reads were discarded for low quality, still leaving ample coverage given the ~50x starting depth. See `NOTES.md` for full details.
+
+### 3. Post-trimming quality check
+
+\`\`\`bash
+fastqc trimmed_data/SRR2584863_1.trimmed.fastq trimmed_data/SRR2584863_2.trimmed.fastq -o qc_reports/
+\`\`\`
+
+Confirms adapter content warning is resolved and the quality tail no longer drops into the red zone.
+
 ## Progress log
 
 - [x] Installed Miniconda on WSL
@@ -65,8 +87,8 @@ Illumina paired-end behavior). See `NOTES.md` for full interpretation.
 - [x] Created `ngs-pipeline` environment with fastqc, fastp, bowtie2, samtools, multiqc
 - [x] Downloaded test dataset
 - [X] Initial QC (FastQC)
-- [ ] Trimming (fastp)
-- [ ] Post-trimming QC
+- [X] Trimming (fastp)
+- [X] Post-trimming QC
 - [ ] Reference genome download
 - [ ] Alignment (Bowtie2)
 - [ ] SAM → BAM conversion, sort and index (SAMtools)
