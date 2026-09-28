@@ -111,6 +111,24 @@ bowtie2 -x reference/REL606_index \
 
 **Result: 99.46% overall alignment rate.** Only ~38.7% of pairs aligned "concordantly" — this is expected, not a data quality issue: the actual library fragment size (~100bp, per fastp's insert size estimate) is shorter than the combined R1+R2 read length (150bp each), causing heavy mate overlap that falls outside Bowtie2's default concordant distance range. See `NOTES.md` for the full explanation.
 
+### 6. SAM to sorted, indexed BAM
+
+```bash
+samtools view -b alignments/SRR2584863.sam > alignments/SRR2584863.bam
+samtools sort alignments/SRR2584863.bam -o alignments/SRR2584863.sorted.bam
+samtools index alignments/SRR2584863.sorted.bam
+```
+
+The sorted BAM (217 MB) is ~5x smaller than the original SAM (1.1 GB). Intermediate SAM/BAM files can be deleted once the sorted BAM is verified.
+
+### 7. Mapping statistics
+
+```bash
+samtools flagstat alignments/SRR2584863.sorted.bam > alignments/flagstat.txt
+```
+
+Results: 2,602,652 reads total, 99.46% mapped, 38.74% properly paired. These numbers match Bowtie2's summary exactly, confirming BAM integrity. Almost all reads (2,578,134) aligned together with their mate, so the low "properly paired" rate reflects the short library fragment size (~100bp), not poor data quality.
+
 ## Progress log
 
 - [x] Installed Miniconda on WSL
@@ -122,6 +140,6 @@ bowtie2 -x reference/REL606_index \
 - [x] Post-trimming QC
 - [x] Reference genome download
 - [x] Alignment (Bowtie2)
-- [ ] SAM → BAM conversion, sort and index (SAMtools)
-- [ ] Mapping statistics (samtools flagstat)
+- [X] SAM → BAM conversion, sort and index (SAMtools)
+- [X] Mapping statistics (samtools flagstat)
 - [ ] Final report (MultiQC)

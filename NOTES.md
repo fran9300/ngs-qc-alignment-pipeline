@@ -133,3 +133,40 @@ Buen resultado, pero con un detalle que vale la pena entender: solo 38.7% de los
 **Por qué pasa esto**: no es un problema de calidad de los datos. Se debe a que el fragmento real de ADN de esta librería es más corto (~100bp, según el insert size peak reportado por fastp) que el largo combinado de R1+R2 (150bp cada uno). Esto hace que ambos mates se solapen fuertemente entre sí, y esa distancia "R1-inicio a R2-fin" cae fuera del rango que Bowtie2 considera "concordante" por default (aunque cada mate individualmente sí alinee correctamente y de forma única). Es un patrón documentado y conocido en la comunidad bioinformática para librerías con fragment size corto relativo al read length, no indica error de secuenciación, contaminación, ni problema del pipeline.
 
 Referencia: mismo patrón discutido en foros de bioinformática (Biostars) para casos análogos con librerías de fragmento corto.
+
+## SAMtools: SAM → BAM, sort, index
+
+Corrido con:
+```bash
+samtools view -b alignments/SRR2584863.sam > alignments/SRR2584863.bam
+samtools sort alignments/SRR2584863.bam -o alignments/SRR2584863.sorted.bam
+samtools index alignments/SRR2584863.sorted.bam
+```
+
+### Qué hace cada paso y por qué
+- **view -b**: SAM (texto plano) → BAM (binario comprimido).
+- **sort**: reordena por posición genómica. El SAM viene en el orden de los reads del FASTQ; casi todas las herramientas downstream exigen el BAM ordenado.
+- **index**: genera el `.bai`, que permite acceso aleatorio a cualquier región sin leer el archivo entero (lo usan visores como IGV).
+
+### Tamaños (evidencia de la compresión)
+- `.sam`: 1.1 GB
+- `.bam` sin ordenar: 319 MB
+- `.sorted.bam`: 217 MB (más chico que el BAM sin ordenar porque al ordenar, reads vecinos quedan juntos y comprimen mejor)
+- `.bai`: 15 KB
+
+### Verificación con samtools flagstat
+Los números coinciden con el resumen de Bowtie2, lo que confirma que el BAM está íntegro:
+- 2,602,652 reads totales (= 1,301,326 pares × 2)
+- 99.46% mapped (igual al overall alignment rate de Bowtie2)
+- 38.74% properly paired (igual a los ~38.7% concordantes de Bowtie2)
+
+"Properly paired" en SAMtools es el mismo concepto que "concordante" en Bowtie2, visto desde otra herramienta.
+
+### Cómo leer el resto del flagstat
+- `with itself and mate mapped`: 2,578,134. Casi todos los reads alinearon junto con su pareja. Esto confirma que el bajo "properly paired" no es un problema de calidad: ambos mates alinean bien, pero la distancia entre ellos cae fuera del rango que se considera propio (por el fragmento corto de ~100bp).
+- `singletons`: 10,593 (0.41%). Reads que alinearon pero cuya pareja no.
+- `mate mapped to a different chr`: 0. Esperable con un genoma de un solo cromosoma. En genomas con varios cromosomas, un valor alto sería señal para investigar.
+- `duplicates`: 0. Es cero porque no corrimos ningún paso de marcado de duplicados, no porque no existan (fastp había estimado 0.35%).
+
+### Limpieza
+Una vez verificado el `.sorted.bam`, se borraron el `.sam` y el `.bam` sin ordenar (~1.4 GB) porque son regenerables desde el índice + los reads trimmeados. También se borraron los FASTQ crudos de `raw_data/`, ya que el comando de descarga está documentado en el README.
