@@ -1,0 +1,8 @@
+Module	Section	Sample Name	Source
+Samtools	flagstat	flagstat.txt	/home/fran_/ngs-pipeline-project/alignments/flagstat.txt
+Bowtie 2 / HiSAT2	all_sections	bowtie2_summary.txt	/home/fran_/ngs-pipeline-project/alignments/bowtie2_summary.txt
+fastp	all_sections	SRR2584863_1.fastq_SRR2584863_2.fastq	/home/fran_/ngs-pipeline-project/qc_reports/fastp_report.json
+FastQC	all_sections	SRR2584863_1.fastq	/home/fran_/ngs-pipeline-project/qc_reports/SRR2584863_1_fastqc.zip
+FastQC	all_sections	SRR2584863_1_trimmed.fastq	/home/fran_/ngs-pipeline-project/qc_reports/SRR2584863_1_trimmed_fastqc.zip
+FastQC	all_sections	SRR2584863_2.fastq	/home/fran_/ngs-pipeline-project/qc_reports/SRR2584863_2_fastqc.zip
+FastQC	all_sections	SRR2584863_2_trimmed.fastq	/home/fran_/ngs-pipeline-project/qc_reports/SRR2584863_2_trimmed_fastqc.zip

@@ -130,7 +130,9 @@ bowtie2 -x reference/REL606_index \
 
 Buen resultado, pero con un detalle que vale la pena entender: solo 38.7% de los pares alinearon "concordantly" (dentro del rango de distancia esperado por Bowtie2), mientras que la gran mayoría del resto alineó "discordantly".
 
-**Por qué pasa esto**: no es un problema de calidad de los datos. Se debe a que el fragmento real de ADN de esta librería es más corto (~100bp, según el insert size peak reportado por fastp) que el largo combinado de R1+R2 (150bp cada uno). Esto hace que ambos mates se solapen fuertemente entre sí, y esa distancia "R1-inicio a R2-fin" cae fuera del rango que Bowtie2 considera "concordante" por default (aunque cada mate individualmente sí alinee correctamente y de forma única). Es un patrón documentado y conocido en la comunidad bioinformática para librerías con fragment size corto relativo al read length, no indica error de secuenciación, contaminación, ni problema del pipeline.
+**Por qué pasa esto**: no es un problema de calidad de los datos. Se debe a que muchos fragmentos de esta librería son más cortos que 300bp (2× el largo de R1+R2, 150bp cada uno), lo que hace que ambos mates se solapen fuertemente entre sí, y esa distancia "R1-inicio a R2-fin" cae fuera del rango que Bowtie2 considera "concordante" por default (aunque cada mate individualmente sí alinee correctamente y de forma única). Es un patrón documentado y conocido en la comunidad bioinformática para librerías con fragment size corto relativo al read length, no indica error de secuenciación, contaminación, ni problema del pipeline.
+
+**Corrección posterior (visto en MultiQC)**: inicialmente se interpretó el "Insert size peak: 100" de fastp como "el fragmento típico mide ~100bp". El gráfico de MultiQC (Fastp: Insert Size Distribution) mostró algo más matizado: no hay un pico angosto, sino una meseta ancha y bastante plana entre ~50bp y ~135bp, con una cola larga que sigue hasta 250bp o más. El "peak 100" es solo el máximo de esa meseta, no un valor representativo de todos los fragmentos. La conclusión general (muchos fragmentos cortos → solapamiento → baja concordancia) sigue siendo válida, pero no se verificó directamente contra los límites `-I`/`-X` de Bowtie2 — queda como posible extensión futura.
 
 Referencia: mismo patrón discutido en foros de bioinformática (Biostars) para casos análogos con librerías de fragmento corto.
 
@@ -170,3 +172,19 @@ Los números coinciden con el resumen de Bowtie2, lo que confirma que el BAM est
 
 ### Limpieza
 Una vez verificado el `.sorted.bam`, se borraron el `.sam` y el `.bam` sin ordenar (~1.4 GB) porque son regenerables desde el índice + los reads trimmeados. También se borraron los FASTQ crudos de `raw_data/`, ya que el comando de descarga está documentado en el README.
+
+## MultiQC — troubleshooting
+
+Comando final:
+```bash
+multiqc qc_reports/ alignments/ -o qc_reports/multiqc --force --fullnames
+```
+
+### Problema: FastQC solo mostraba 2 muestras en vez de 4
+MultiQC deriva el nombre de muestra a partir del nombre de archivo, y por defecto aplica una limpieza automática que recorta sufijos comunes de procesamiento (como `_trimmed`). Esto hacía que `SRR2584863_1_fastqc.zip` y `SRR2584863_1_trimmed_fastqc.zip` resolvieran al mismo nombre de muestra (`SRR2584863_1`), y MultiQC descartaba el segundo por considerarlo ya procesado (visible en el log con `-v`: "Skipping ... as already parsed"). `--fn_as_s_name` no resuelve esto (afecta otro tipo de recorte); la opción correcta es `--fullnames`.
+
+### Nota aparte: nombres de archivo con puntos
+Los archivos trimmeados se habían nombrado inicialmente con un punto (`SRR2584863_1.trimmed.fastq`), lo cual generaba una carpeta interna en el `.zip` de FastQC con un punto en el nombre y causaba otro problema de reconocimiento en MultiQC. Se corrigió renombrando a guion bajo (`SRR2584863_1_trimmed.fastq`). Lección: evitar puntos en nombres de archivos intermedios de un pipeline.
+
+### Resultado final
+Con `--fullnames`, MultiQC reconoció las 4 muestras de FastQC (crudas y trimmeadas) como entidades separadas. El reporte confirma visualmente lo ya sabido: Adapter Content cae de ~9-10% a ~0% después del trimming, y la distribución de largos deja de ser un pico único en 150bp.

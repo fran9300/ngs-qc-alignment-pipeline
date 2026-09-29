@@ -1,0 +1,8 @@
+Sample	samtools_flagstat-flagstat_total	samtools_flagstat-mapped_passed	samtools_flagstat-mapped_passed_pct	bowtie_2_hisat2-overall_alignment_rate	fastp-pct_duplication	fastp-after_filtering_q30_rate	fastp-after_filtering_q30_bases	fastp-filtering_result_passed_filter_reads	fastp-after_filtering_gc_content	fastp-pct_surviving_reads	fastp-pct_surviving_bases	fastp-pct_adapter	fastp-before_filtering_read1_mean_length	fastp-before_filtering_read2_mean_length	fastqc-percent_duplicates	fastqc-percent_gc	fastqc-avg_sequence_length	fastqc-median_sequence_length	fastqc-percent_fails	fastqc-total_sequences
+SRR2584863_1.fastq															27.84577595707715	50.0	150.0	150	0.0	1.553259
+SRR2584863_1.fastq_SRR2584863_2.fastq					0.35203399999999996	89.1362	331.619222	2.602652	50.6405	83.78036116320587	79.83999234298122	10.298024991324692	150.0	150.0						
+SRR2584863_1_trimmed.fastq															25.565121892020002	50.0	143.3834719355488	150	0.0	1.301326
+SRR2584863_2.fastq															24.023567245244138	50.0	150.0	150	27.27272727272727	1.553259
+SRR2584863_2_trimmed.fastq															25.614018262340537	50.0	143.3834719355488	150	27.27272727272727	1.301326
+bowtie2_summary.txt				99.46																
+flagstat.txt	2.602652	2.588727	99.46																	

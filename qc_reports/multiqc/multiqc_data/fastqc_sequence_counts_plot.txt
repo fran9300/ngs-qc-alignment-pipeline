@@ -1,0 +1,5 @@
+Sample	Unique Reads	Duplicate Reads
+SRR2584863_1.fastq	1120742.0	432517.0
+SRR2584863_1_trimmed.fastq	968641.0	332685.0
+SRR2584863_2.fastq	1180111.0	373148.0
+SRR2584863_2_trimmed.fastq	968005.0	333321.0

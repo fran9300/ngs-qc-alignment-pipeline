@@ -1,0 +1,2 @@
+Sample	Passed Filter	Low Quality	Too Many N	Low Complexity	Too Short	Too Long
+SRR2584863_1.fastq_SRR2584863_2.fastq	2602652.0	502702.0	1164.0	nan	0.0	0.0

@@ -1,0 +1,2 @@
+Sample	Total Reads	Total Passed QC	Mapped	Duplicates	Paired in Sequencing	Properly Paired	Self and mate mapped	Singletons	Mate mapped to diff chr	Diff chr (mapQ >= 5)
+flagstat.txt	100.0	100.0	99.46496880873816	0.0	100.0	38.74063839499095	99.0579608799025	0.40700792883566456	0.0	0.0

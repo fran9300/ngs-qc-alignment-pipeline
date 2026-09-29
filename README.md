@@ -109,7 +109,7 @@ bowtie2 -x reference/REL606_index \
   2> alignments/bowtie2_summary.txt
 ```
 
-**Result: 99.46% overall alignment rate.** Only ~38.7% of pairs aligned "concordantly" — this is expected, not a data quality issue: the actual library fragment size (~100bp, per fastp's insert size estimate) is shorter than the combined R1+R2 read length (150bp each), causing heavy mate overlap that falls outside Bowtie2's default concordant distance range. See `NOTES.md` for the full explanation.
+**Result: 99.46% overall alignment rate.** Only ~38.7% of pairs aligned "concordantly" — this is expected, not a data quality issue: fragment sizes in this library are broadly distributed (a plateau roughly ~50-135bp with a long tail, per fastp's insert size plot), with many fragments shorter than the 300bp needed to avoid mate overlap. This likely explains the low concordant-pair rate, though it was not directly verified against Bowtie2's `-I`/`-X` limits. See `NOTES.md` for the full explanation.
 
 ### 6. SAM to sorted, indexed BAM
 
@@ -129,6 +129,16 @@ samtools flagstat alignments/SRR2584863.sorted.bam > alignments/flagstat.txt
 
 Results: 2,602,652 reads total, 99.46% mapped, 38.74% properly paired. These numbers match Bowtie2's summary exactly, confirming BAM integrity. Almost all reads (2,578,134) aligned together with their mate, so the low "properly paired" rate reflects the short library fragment size (~100bp), not poor data quality.
 
+### 8. Aggregate report (MultiQC)
+
+```bash
+multiqc qc_reports/ alignments/ -o qc_reports/multiqc --force --fullnames
+```
+
+`--fullnames` is required: by default MultiQC strips common processing suffixes like `_trimmed` when deriving sample names, which caused raw and trimmed FastQC reports to collapse into the same sample and only 2 of 4 to show up. See `NOTES.md` for details.
+
+Open the report at `qc_reports/multiqc/multiqc_report.html`.
+
 ## Progress log
 
 - [x] Installed Miniconda on WSL
@@ -142,4 +152,4 @@ Results: 2,602,652 reads total, 99.46% mapped, 38.74% properly paired. These num
 - [x] Alignment (Bowtie2)
 - [X] SAM → BAM conversion, sort and index (SAMtools)
 - [X] Mapping statistics (samtools flagstat)
-- [ ] Final report (MultiQC)
+- [x] Final report (MultiQC)
