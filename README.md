@@ -67,8 +67,8 @@ Illumina paired-end behavior). See `NOTES.md` for full interpretation.
 fastp \
   -i raw_data/SRR2584863_1.fastq \
   -I raw_data/SRR2584863_2.fastq \
-  -o trimmed_data/SRR2584863_1.trimmed.fastq \
-  -O trimmed_data/SRR2584863_2.trimmed.fastq \
+  -o trimmed_data/SRR2584863_1_trimmed.fastq \
+  -O trimmed_data/SRR2584863_2_trimmed.fastq \
   --html qc_reports/fastp_report.html \
   --json qc_reports/fastp_report.json
 ```
@@ -78,7 +78,7 @@ fastp automatically detects and trims adapters (Nextera Transposase Sequence was
 ### 3. Post-trimming quality check
 
 ```bash
-fastqc trimmed_data/SRR2584863_1.trimmed.fastq trimmed_data/SRR2584863_2.trimmed.fastq -o qc_reports/
+fastqc trimmed_data/SRR2584863_1_trimmed.fastq trimmed_data/SRR2584863_2_trimmed.fastq -o qc_reports/
 ```
 
 Confirms adapter content warning is resolved and the quality tail no longer drops into the red zone.
@@ -102,8 +102,8 @@ Index the reference, then align trimmed reads:
 bowtie2-build reference/REL606.fasta reference/REL606_index
 
 bowtie2 -x reference/REL606_index \
-  -1 trimmed_data/SRR2584863_1.trimmed.fastq \
-  -2 trimmed_data/SRR2584863_2.trimmed.fastq \
+  -1 trimmed_data/SRR2584863_1_trimmed.fastq \
+  -2 trimmed_data/SRR2584863_2_trimmed.fastq \
   -S alignments/SRR2584863.sam \
   --threads 4 \
   2> alignments/bowtie2_summary.txt
@@ -127,7 +127,7 @@ The sorted BAM (217 MB) is ~5x smaller than the original SAM (1.1 GB). Intermedi
 samtools flagstat alignments/SRR2584863.sorted.bam > alignments/flagstat.txt
 ```
 
-Results: 2,602,652 reads total, 99.46% mapped, 38.74% properly paired. These numbers match Bowtie2's summary exactly, confirming BAM integrity. Almost all reads (2,578,134) aligned together with their mate, so the low "properly paired" rate reflects the short library fragment size (~100bp), not poor data quality.
+Results: 2,602,652 reads total, 99.46% mapped, 38.74% properly paired. These numbers match Bowtie2's summary exactly, confirming BAM integrity. Almost all reads (2,578,134) aligned together with their mate, so the low "properly paired" rate reflects the library's fragment size distribution (many fragments shorter than 300bp, per fastp), not poor data quality.
 
 ### 8. Aggregate report (MultiQC)
 
@@ -150,6 +150,6 @@ Open the report at `qc_reports/multiqc/multiqc_report.html`.
 - [x] Post-trimming QC
 - [x] Reference genome download
 - [x] Alignment (Bowtie2)
-- [X] SAM → BAM conversion, sort and index (SAMtools)
-- [X] Mapping statistics (samtools flagstat)
+- [x] SAM → BAM conversion, sort and index (SAMtools)
+- [x] Mapping statistics (samtools flagstat)
 - [x] Final report (MultiQC)

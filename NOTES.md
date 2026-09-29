@@ -88,8 +88,8 @@ Corrido con:
 fastp \
   -i raw_data/SRR2584863_1.fastq \
   -I raw_data/SRR2584863_2.fastq \
-  -o trimmed_data/SRR2584863_1.trimmed.fastq \
-  -O trimmed_data/SRR2584863_2.trimmed.fastq \
+  -o trimmed_data/SRR2584863_1_trimmed.fastq \
+  -O trimmed_data/SRR2584863_2_trimmed.fastq \
   --html qc_reports/fastp_report.html \
   --json qc_reports/fastp_report.json
 ```
@@ -119,8 +119,8 @@ Corrido con:
 
 ```bash
 bowtie2 -x reference/REL606_index \
-  -1 trimmed_data/SRR2584863_1.trimmed.fastq \
-  -2 trimmed_data/SRR2584863_2.trimmed.fastq \
+  -1 trimmed_data/SRR2584863_1_trimmed.fastq \
+  -2 trimmed_data/SRR2584863_2_trimmed.fastq \
   -S alignments/SRR2584863.sam \
   --threads 4 \
   2> alignments/bowtie2_summary.txt
